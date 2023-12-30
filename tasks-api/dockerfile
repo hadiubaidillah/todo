@@ -1,0 +1,30 @@
+FROM amazoncorretto:21-alpine
+
+RUN mkdir /app
+COPY ./build/libs/tasks-*-SNAPSHOT.jar /app/tasks-api.jar
+
+ENV RABBITMQ_HOST localhost
+ENV RABBITMQ_PORT 5672
+ENV RABBITMQ_USERNAME user
+ENV RABBITMQ_PASSWORD password
+
+ENV POSTGRES_URL jdbc:postgresql://localhost:5432/postgres
+ENV POSTGRES_USERNAME postgres
+ENV POSTGRES_PASSWORD admin
+ENV POSTGRES_DRIVER org.postgresql.Driver
+
+ENV KEYCLOAK_ISSUER_URI=
+ENV KEYCLOAK_JWKS_URI=
+
+ENV EUREKA_HOSTNAME=localhost
+
+ENV RABBITMQ_EXCHANGE notifications
+ENV RABBITMQ_TASKS_QUEUE tasks
+ENV RABBITMQ_TASKS_ROUTINGKEY tasks.key
+ENV RABBITMQ_DELETE_NOTIFICATION_QUEUE delete_notification
+ENV RABBITMQ_DELETE_NOTIFICATION_ROUTINGKEY delete.notification
+
+ENV SERVER_PORT=8081
+
+EXPOSE 8081
+ENTRYPOINT ["java", "-jar","/app/tasks-api.jar"]

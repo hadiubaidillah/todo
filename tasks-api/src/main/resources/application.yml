@@ -1,0 +1,40 @@
+spring:
+  application:
+    name: tasks-api
+  datasource:
+    url: ${POSTGRES_URL}
+    username: ${POSTGRES_USERNAME}
+    password: ${POSTGRES_PASSWORD}
+    driverClassName: org.postgresql.Driver
+  rabbitmq:
+    host: ${RABBITMQ_HOST}
+    port: ${RABBITMQ_PORT}
+    username: ${RABBITMQ_USERNAME}
+    password: ${RABBITMQ_PASSWORD}
+  jpa:
+    hibernate:
+      ddl-auto: update
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          issuer-uri: ${KEYCLOAK_ISSUER_URI}
+          jwk-set-uri: ${KEYCLOAK_JWKS_URI}
+eureka:
+  instance:
+    preferIpAddress: true
+  client:
+    serviceUrl:
+      defaultZone: http://${EUREKA_HOSTNAME}:8761/eureka/
+application:
+  rabbitmq:
+    exchange: ${RABBITMQ_EXCHANGE}
+    queues:
+      tasks:
+        queue: ${RABBITMQ_TASKS_QUEUE}
+        routing-key: ${RABBITMQ_TASKS_ROUTINGKEY}
+      delete-notification:
+        queue: ${RABBITMQ_DELETE_NOTIFICATION_QUEUE}
+        routing-key: ${RABBITMQ_DELETE_NOTIFICATION_ROUTINGKEY}
+server:
+  port: ${SERVER_PORT:8081}

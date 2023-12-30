@@ -1,0 +1,128 @@
+version: '3.8'
+
+services:
+  taskapi:
+    container_name: task-api
+    image: task-api:latest
+    build: 
+      context: ./tasks-api/
+    ports:
+      - "8081:8081"
+    environment:
+      - RABBITMQ_HOST=rabbitmq-delayed
+      - RABBITMQ_PORT=5672
+      - RABBITMQ_USERNAME=user
+      - RABBITMQ_PASSWORD=password
+
+      - RABBITMQ_EXCHANGE=notifications
+      - RABBITMQ_TASKS_QUEUE=tasks
+      - RABBITMQ_TASKS_ROUTINGKEY=tasks.key
+      - RABBITMQ_DELETE_NOTIFICATION_QUEUE=delete_notification
+      - RABBITMQ_DELETE_NOTIFICATION_ROUTINGKEY=delete.notification
+
+      - POSTGRES_URL=jdbc:postgresql://tasks-postgres:5432/postgres
+      - POSTGRES_USERNAME=postgres
+      - POSTGRES_PASSWORD=admin
+      - POSTGRES_DRIVER=org.postgresql.Driver
+      # This must be the issuer received in the token payload.
+      # It should not be "tasks-keycloak" but "localhost"
+      - KEYCLOAK_ISSUER_URI=http://localhost:8083/realms/todo
+      - KEYCLOAK_JWKS_URI=http://tasks-keycloak:8083/realms/todo/protocol/openid-connect/certs
+      
+      - EUREKA_HOSTNAME=discovery-server
+    depends_on:
+      - taskpostgres
+      - rabbitmq
+      - gatewayserver
+      - discoveryserver
+  notificationsapi:
+    container_name: notifications-api
+    image: notifications-api:latest
+    build: 
+      context: ./tasks-notification/
+    ports:
+      - "8082:8082"
+    environment:
+      - RABBITMQ_HOST=rabbitmq-delayed
+      - RABBITMQ_PORT=5672
+      - RABBITMQ_USERNAME=user
+      - RABBITMQ_PASSWORD=password
+
+      - RABBITMQ_EXCHANGE=notifications
+      - RABBITMQ_TASKS_QUEUE=tasks
+      - RABBITMQ_TASKS_ROUTINGKEY=tasks.key
+      - RABBITMQ_EMAIL_NOTIFICATIONS_QUEUE=email_notifications
+      - RABBITMQ_EMAIL_NOTIFICATIONS_ROUTINGKEY=email.notifications
+      - RABBITMQ_DELETE_NOTIFICATION_QUEUE=delete_notification
+      - RABBITMQ_DELETE_NOTIFICATION_ROUTINGKEY=delete.notification
+
+      - POSTGRES_URL=jdbc:postgresql://tasks-postgres:5432/postgres
+      - POSTGRES_USERNAME=postgres
+      - POSTGRES_PASSWORD=admin
+      - POSTGRES_DRIVER=org.postgresql.Driver
+
+      # This must be the issuer received in the token payload.
+      # It should not be "tasks-keycloak" but "localhost"
+      - KEYCLOAK_ISSUER_URI=http://localhost:8083/realms/todo
+      - KEYCLOAK_JWKS_URI=http://tasks-keycloak:8083/realms/todo/protocol/openid-connect/certs
+      
+      - EUREKA_HOSTNAME=discovery-server
+
+      # Settings for sending email with the SMTP protocol
+      - MAIL_SMTP_HOST=smtp.gmail.com
+      - MAIL_SMTP_PORT=587
+      - MAIL_SMTP_USERNAME=
+      - MAIL_SMTP_PASSWORD=
+    depends_on:
+      - taskpostgres
+      - discoveryserver
+      - gatewayserver
+      - rabbitmq
+  discoveryserver:
+    container_name: discovery-server
+    image: tasks-discovery-server:latest
+    build: 
+      context: ./tasks-discovery/
+    ports:
+      - "8761:8761"
+  gatewayserver:
+    container_name: gateway-server
+    image: tasks-gateway-server:latest
+    build:
+      context: ./tasks-gateway-server/
+    ports:
+      - "8080:8080"
+    environment:
+      - EUREKA_HOSTNAME=discovery-server
+    depends_on:
+      - discoveryserver
+  rabbitmq:
+    container_name: rabbitmq-delayed
+    image: rabbitmq-delayed:latest
+    build: 
+      context: ./rabbitmq/
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    environment:
+      - RABBITMQ_DEFAULT_USER=user
+      - RABBITMQ_DEFAULT_PASS=password
+  taskpostgres:
+    container_name: tasks-postgres
+    image: postgres:latest
+    ports:
+      - "5432:5432"
+    environment:
+      - POSTGRES_PASSWORD=admin
+  keycloak:
+    container_name: tasks-keycloak
+    image: quay.io/keycloak/keycloak:23.0.3
+    volumes:
+      - "./keycloak:/opt/keycloak/data/import"
+    environment:
+      KEYCLOAK_ADMIN: admin
+      KEYCLOAK_ADMIN_PASSWORD: admin
+    ports:
+      - "8083:8083"
+      - "8787:8787"
+    command: start-dev --http-port 8083 --import-realm

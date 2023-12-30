@@ -1,0 +1,10 @@
+FROM amazoncorretto:21-alpine
+
+RUN mkdir /app
+COPY ./build/libs/tasks-gateway-server-*-SNAPSHOT.jar /app/gateway-server.jar
+
+ENV EUREKA_HOSTNAME=localhost
+ENV SERVER_PORT=8080
+
+EXPOSE 8080
+ENTRYPOINT ["java", "-jar","/app/gateway-server.jar"]

@@ -1,0 +1,31 @@
+spring:
+  application:
+    name: task-gateway-server
+  cloud:
+    gateway:
+      discovery:
+        locator:
+          enabled: true
+      routes:
+        - id: TASKS-API
+          uri: lb://TASKS-API
+          predicates:
+            - Path=/api/v1/tasks/**
+          filters:
+            - DedupeResponseHeader=Access-Control-Allow-Credentials Access-Control-Allow-Origin
+            - RewritePath=/api/v1/tasks/(?<segment>.*),/api/v1/tasks/$\{segment}
+        - id: notifications-api
+          uri: lb://notifications-api
+          predicates:
+            - Path=/api/v1/notifications/**
+          filters:
+            - DedupeResponseHeader=Access-Control-Allow-Credentials Access-Control-Allow-Origin
+            - RewritePath=/api/v1/notifications/(?<segment>.*),/api/v1/notifications/$\{segment}
+eureka:
+  instance:
+    preferIpAddress: true
+  client:
+    serviceUrl:
+      defaultZone: http://${EUREKA_HOSTNAME:localhost}:8761/eureka/
+server:
+  port: ${SERVER_PORT:8080}

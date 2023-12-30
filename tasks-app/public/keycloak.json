@@ -1,0 +1,8 @@
+{
+  "realm": "todo",
+  "auth-server-url": "http://localhost:8083/",
+  "ssl-required": "external",
+  "resource": "tasks-react",
+  "public-client": true,
+  "confidential-port": 0
+}

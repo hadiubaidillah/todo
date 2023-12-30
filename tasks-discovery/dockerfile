@@ -1,0 +1,9 @@
+FROM amazoncorretto:21-alpine
+
+RUN mkdir /app
+COPY ./build/libs/tasks-discovery-*-SNAPSHOT.jar /app/discovery-server.jar
+
+ENV SERVER_PORT=8761
+
+EXPOSE 8761
+ENTRYPOINT ["java", "-jar","/app/discovery-server.jar"]
