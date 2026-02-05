@@ -1,0 +1,7 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: discovery-config
+  namespace: microservices-platform
+data:
+  SERVER_PORT: "8761"

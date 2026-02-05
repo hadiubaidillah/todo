@@ -1,0 +1,124 @@
+server:
+  port: ${SERVER_PORT:8080}
+
+spring:
+  application:
+    name: gateway-server
+  cloud:
+    gateway:
+      discovery:
+        locator:
+          enabled: true
+      routes:
+        # --- Platform Routes ---
+        - id: notification-sse
+          uri: lb://NOTIFICATION-SERVICE
+          predicates:
+            - Path=/api/v1/notifications/stream
+          # No CircuitBreaker/TimeLimiter so SSE connections stay open
+
+        - id: notification-service
+          uri: lb://NOTIFICATION-SERVICE
+          predicates:
+            - Path=/api/v1/notifications/**
+          filters:
+            - name: CircuitBreaker
+              args:
+                name: notificationService
+                fallbackUri: forward:/fallback/notification
+
+        # --- Domain Service Routes ---
+        - id: todo-service
+          uri: lb://TODO-SERVICE
+          predicates:
+            - Path=/api/v1/tasks/**
+          filters:
+            - name: RequestRateLimiter
+              args:
+                redis-rate-limiter.replenishRate: 10
+                redis-rate-limiter.burstCapacity: 20
+                key-resolver: "#{@userKeyResolver}"
+            - name: CircuitBreaker
+              args:
+                name: todoService
+                fallbackUri: forward:/fallback/todo
+
+        # --- OpenAPI Docs Routes ---
+        - id: todo-service-docs
+          uri: lb://TODO-SERVICE
+          predicates:
+            - Path=/v3/api-docs/todo-service
+          filters:
+            - RewritePath=/v3/api-docs/todo-service, /v3/api-docs
+
+        - id: notification-service-docs
+          uri: lb://NOTIFICATION-SERVICE
+          predicates:
+            - Path=/v3/api-docs/notification-service
+          filters:
+            - RewritePath=/v3/api-docs/notification-service, /v3/api-docs
+
+  data:
+    redis:
+      host: ${REDIS_HOST:localhost}
+      port: ${REDIS_PORT:6379}
+
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          issuer-uri: ${KEYCLOAK_ISSUER_URI:http://localhost:8083/realms/todo}
+          jwk-set-uri: ${KEYCLOAK_JWKS_URI:http://localhost:8083/realms/todo/protocol/openid-connect/certs}
+
+eureka:
+  client:
+    service-url:
+      defaultZone: http://${EUREKA_HOSTNAME:localhost}:8761/eureka/
+  instance:
+    prefer-ip-address: true
+
+cors:
+  allowed-origins: ${CORS_ALLOWED_ORIGINS:http://localhost:4200}
+
+resilience4j:
+  circuitbreaker:
+    configs:
+      default:
+        slidingWindowSize: 10
+        failureRateThreshold: 50
+        waitDurationInOpenState: 10s
+        permittedNumberOfCallsInHalfOpenState: 3
+    instances:
+      todoService:
+        baseConfig: default
+      notificationService:
+        baseConfig: default
+  timelimiter:
+    configs:
+      default:
+        timeoutDuration: 5s
+
+springdoc:
+  swagger-ui:
+    urls:
+      - name: Todo Service
+        url: /v3/api-docs/todo-service
+      - name: Notification Service
+        url: /v3/api-docs/notification-service
+  api-docs:
+    enabled: true
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,prometheus,metrics,circuitbreakers
+  tracing:
+    sampling:
+      probability: 1.0
+  zipkin:
+    tracing:
+      endpoint: ${ZIPKIN_URL:http://localhost:9411}/api/v2/spans
+  metrics:
+    tags:
+      application: ${spring.application.name}

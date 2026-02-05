@@ -1,0 +1,26 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: notification-service-config
+  namespace: microservices-platform
+data:
+  SERVER_PORT: "8082"
+  POSTGRES_URL: jdbc:postgresql://postgres:5432/platform_notification_db
+  RABBITMQ_HOST: rabbitmq
+  RABBITMQ_PORT: "5672"
+  RABBITMQ_EXCHANGE: platform.notifications
+  RABBITMQ_NOTIFICATION_EVENTS_QUEUE: notification.events
+  RABBITMQ_NOTIFICATION_EVENTS_ROUTINGKEY: notification.event
+  RABBITMQ_NOTIFICATION_EMAIL_QUEUE: notification.email
+  RABBITMQ_NOTIFICATION_EMAIL_ROUTINGKEY: notification.email
+  RABBITMQ_NOTIFICATION_CANCEL_QUEUE: notification.cancel
+  RABBITMQ_NOTIFICATION_CANCEL_ROUTINGKEY: notification.cancel
+  KEYCLOAK_ISSUER_URI: http://keycloak:8080/realms/todo
+  KEYCLOAK_JWKS_URI: http://keycloak:8080/realms/todo/protocol/openid-connect/certs
+  EUREKA_HOSTNAME: discovery-server
+  CORS_ALLOWED_ORIGINS: http://frontend
+  MAIL_SMTP_HOST: ""
+  MAIL_SMTP_PORT: "587"
+  REDIS_HOST: redis
+  REDIS_PORT: "6379"
+  ZIPKIN_URL: http://zipkin:9411

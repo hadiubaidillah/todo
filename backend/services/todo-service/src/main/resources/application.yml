@@ -1,0 +1,93 @@
+server:
+  port: ${SERVER_PORT:8081}
+
+spring:
+  application:
+    name: todo-service
+  datasource:
+    url: ${POSTGRES_URL:jdbc:postgresql://localhost:5432/todo_db}
+    username: ${POSTGRES_USERNAME:postgres}
+    password: ${POSTGRES_PASSWORD:postgres}
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: false
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+  rabbitmq:
+    host: ${RABBITMQ_HOST:localhost}
+    port: ${RABBITMQ_PORT:5672}
+    username: ${RABBITMQ_USERNAME:guest}
+    password: ${RABBITMQ_PASSWORD:guest}
+  data:
+    redis:
+      host: ${REDIS_HOST:localhost}
+      port: ${REDIS_PORT:6379}
+  cache:
+    type: redis
+    redis:
+      time-to-live: 300000
+
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          issuer-uri: ${KEYCLOAK_ISSUER_URI:http://localhost:8083/realms/todo}
+          jwk-set-uri: ${KEYCLOAK_JWKS_URI:http://localhost:8083/realms/todo/protocol/openid-connect/certs}
+
+eureka:
+  client:
+    service-url:
+      defaultZone: http://${EUREKA_HOSTNAME:localhost}:8761/eureka/
+  instance:
+    prefer-ip-address: true
+
+rabbitmq:
+  exchange: ${RABBITMQ_EXCHANGE:platform.notifications}
+  notification-events:
+    routing-key: ${RABBITMQ_NOTIFICATION_EVENTS_ROUTINGKEY:notification.event}
+  notification-cancel:
+    routing-key: ${RABBITMQ_NOTIFICATION_CANCEL_ROUTINGKEY:notification.cancel}
+
+resilience4j:
+  circuitbreaker:
+    configs:
+      default:
+        slidingWindowSize: 10
+        failureRateThreshold: 50
+        waitDurationInOpenState: 10s
+        permittedNumberOfCallsInHalfOpenState: 3
+    instances:
+      notificationPublisher:
+        baseConfig: default
+  retry:
+    instances:
+      notificationPublisher:
+        maxAttempts: 3
+        waitDuration: 1s
+  timelimiter:
+    instances:
+      notificationPublisher:
+        timeoutDuration: 5s
+
+springdoc:
+  api-docs:
+    path: /v3/api-docs
+  swagger-ui:
+    path: /swagger-ui.html
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,prometheus,metrics,circuitbreakers
+  tracing:
+    sampling:
+      probability: 1.0
+  zipkin:
+    tracing:
+      endpoint: ${ZIPKIN_URL:http://localhost:9411}/api/v2/spans
+  metrics:
+    tags:
+      application: ${spring.application.name}

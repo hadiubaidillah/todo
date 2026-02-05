@@ -1,128 +1,222 @@
-version: '3.8'
-
 services:
-  taskapi:
-    container_name: task-api
-    image: task-api:latest
-    build: 
-      context: ./tasks-api/
+  # ========================
+  # Infrastructure Services
+  # ========================
+  postgres:
+    image: postgres:17
     ports:
-      - "8081:8081"
+      - "5432:5432"
     environment:
-      - RABBITMQ_HOST=rabbitmq-delayed
-      - RABBITMQ_PORT=5672
-      - RABBITMQ_USERNAME=user
-      - RABBITMQ_PASSWORD=password
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./infrastructure/postgres/init.sql:/docker-entrypoint-initdb.d/init.sql
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 5s
+      retries: 5
 
-      - RABBITMQ_EXCHANGE=notifications
-      - RABBITMQ_TASKS_QUEUE=tasks
-      - RABBITMQ_TASKS_ROUTINGKEY=tasks.key
-      - RABBITMQ_DELETE_NOTIFICATION_QUEUE=delete_notification
-      - RABBITMQ_DELETE_NOTIFICATION_ROUTINGKEY=delete.notification
-
-      - POSTGRES_URL=jdbc:postgresql://tasks-postgres:5432/postgres
-      - POSTGRES_USERNAME=postgres
-      - POSTGRES_PASSWORD=admin
-      - POSTGRES_DRIVER=org.postgresql.Driver
-      # This must be the issuer received in the token payload.
-      # It should not be "tasks-keycloak" but "localhost"
-      - KEYCLOAK_ISSUER_URI=http://localhost:8083/realms/todo
-      - KEYCLOAK_JWKS_URI=http://tasks-keycloak:8083/realms/todo/protocol/openid-connect/certs
-      
-      - EUREKA_HOSTNAME=discovery-server
-    depends_on:
-      - taskpostgres
-      - rabbitmq
-      - gatewayserver
-      - discoveryserver
-  notificationsapi:
-    container_name: notifications-api
-    image: notifications-api:latest
-    build: 
-      context: ./tasks-notification/
-    ports:
-      - "8082:8082"
-    environment:
-      - RABBITMQ_HOST=rabbitmq-delayed
-      - RABBITMQ_PORT=5672
-      - RABBITMQ_USERNAME=user
-      - RABBITMQ_PASSWORD=password
-
-      - RABBITMQ_EXCHANGE=notifications
-      - RABBITMQ_TASKS_QUEUE=tasks
-      - RABBITMQ_TASKS_ROUTINGKEY=tasks.key
-      - RABBITMQ_EMAIL_NOTIFICATIONS_QUEUE=email_notifications
-      - RABBITMQ_EMAIL_NOTIFICATIONS_ROUTINGKEY=email.notifications
-      - RABBITMQ_DELETE_NOTIFICATION_QUEUE=delete_notification
-      - RABBITMQ_DELETE_NOTIFICATION_ROUTINGKEY=delete.notification
-
-      - POSTGRES_URL=jdbc:postgresql://tasks-postgres:5432/postgres
-      - POSTGRES_USERNAME=postgres
-      - POSTGRES_PASSWORD=admin
-      - POSTGRES_DRIVER=org.postgresql.Driver
-
-      # This must be the issuer received in the token payload.
-      # It should not be "tasks-keycloak" but "localhost"
-      - KEYCLOAK_ISSUER_URI=http://localhost:8083/realms/todo
-      - KEYCLOAK_JWKS_URI=http://tasks-keycloak:8083/realms/todo/protocol/openid-connect/certs
-      
-      - EUREKA_HOSTNAME=discovery-server
-
-      # Settings for sending email with the SMTP protocol
-      - MAIL_SMTP_HOST=smtp.gmail.com
-      - MAIL_SMTP_PORT=587
-      - MAIL_SMTP_USERNAME=
-      - MAIL_SMTP_PASSWORD=
-    depends_on:
-      - taskpostgres
-      - discoveryserver
-      - gatewayserver
-      - rabbitmq
-  discoveryserver:
-    container_name: discovery-server
-    image: tasks-discovery-server:latest
-    build: 
-      context: ./tasks-discovery/
-    ports:
-      - "8761:8761"
-  gatewayserver:
-    container_name: gateway-server
-    image: tasks-gateway-server:latest
-    build:
-      context: ./tasks-gateway-server/
-    ports:
-      - "8080:8080"
-    environment:
-      - EUREKA_HOSTNAME=discovery-server
-    depends_on:
-      - discoveryserver
   rabbitmq:
-    container_name: rabbitmq-delayed
-    image: rabbitmq-delayed:latest
-    build: 
-      context: ./rabbitmq/
+    build: ./infrastructure/rabbitmq
     ports:
       - "5672:5672"
       - "15672:15672"
     environment:
-      - RABBITMQ_DEFAULT_USER=user
-      - RABBITMQ_DEFAULT_PASS=password
-  taskpostgres:
-    container_name: tasks-postgres
-    image: postgres:latest
-    ports:
-      - "5432:5432"
-    environment:
-      - POSTGRES_PASSWORD=admin
-  keycloak:
-    container_name: tasks-keycloak
-    image: quay.io/keycloak/keycloak:23.0.3
+      RABBITMQ_DEFAULT_USER: guest
+      RABBITMQ_DEFAULT_PASS: guest
     volumes:
-      - "./keycloak:/opt/keycloak/data/import"
-    environment:
-      KEYCLOAK_ADMIN: admin
-      KEYCLOAK_ADMIN_PASSWORD: admin
+      - rabbitmq_data:/var/lib/rabbitmq
+    healthcheck:
+      test: ["CMD", "rabbitmq-diagnostics", "check_port_connectivity"]
+      interval: 10s
+      retries: 5
+
+  keycloak:
+    image: quay.io/keycloak/keycloak:26.0.5
     ports:
-      - "8083:8083"
-      - "8787:8787"
-    command: start-dev --http-port 8083 --import-realm
+      - "8083:8080"
+    environment:
+      KC_BOOTSTRAP_ADMIN_USERNAME: admin
+      KC_BOOTSTRAP_ADMIN_PASSWORD: admin
+      KC_DB: postgres
+      KC_DB_URL: jdbc:postgresql://postgres:5432/postgres
+      KC_DB_USERNAME: postgres
+      KC_DB_PASSWORD: postgres
+      GOOGLE_CLIENT_ID: ${GOOGLE_CLIENT_ID:-your-google-client-id}
+      GOOGLE_CLIENT_SECRET: ${GOOGLE_CLIENT_SECRET:-your-google-client-secret}
+    volumes:
+      - ./infrastructure/keycloak/todo-realm.json:/opt/keycloak/data/import/todo-realm.json
+    command: start-dev --import-realm
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+  pgadmin:
+    image: dpage/pgadmin4:latest
+    ports:
+      - "5050:80"
+    environment:
+      PGADMIN_DEFAULT_EMAIL: admin@admin.com
+      PGADMIN_DEFAULT_PASSWORD: admin
+    volumes:
+      - pgadmin_data:/var/lib/pgadmin
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+  redis:
+    image: redis:latest
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      retries: 5
+
+  # ========================
+  # Observability Stack
+  # ========================
+  zipkin:
+    image: openzipkin/zipkin:latest
+    ports:
+      - "9411:9411"
+
+  prometheus:
+    image: prom/prometheus:latest
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./infrastructure/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml
+      - ./infrastructure/prometheus/alert-rules.yml:/etc/prometheus/alert-rules.yml
+      - prometheus_data:/prometheus
+
+  grafana:
+    image: grafana/grafana:latest
+    ports:
+      - "3000:3000"
+    environment:
+      GF_SECURITY_ADMIN_USER: admin
+      GF_SECURITY_ADMIN_PASSWORD: admin
+    volumes:
+      - grafana_data:/var/lib/grafana
+      - ./infrastructure/grafana/provisioning:/etc/grafana/provisioning
+    depends_on:
+      - prometheus
+      - loki
+
+  alertmanager:
+    image: prom/alertmanager:latest
+    ports:
+      - "9093:9093"
+    volumes:
+      - ./infrastructure/alertmanager/alertmanager.yml:/etc/alertmanager/alertmanager.yml
+
+  loki:
+    image: grafana/loki:latest
+    ports:
+      - "3100:3100"
+    volumes:
+      - loki_data:/loki
+      - ./infrastructure/loki/loki-config.yml:/etc/loki/local-config.yaml
+    command: -config.file=/etc/loki/local-config.yaml
+
+  promtail:
+    image: grafana/promtail:latest
+    volumes:
+      - /var/log:/var/log:ro
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - ./infrastructure/promtail/promtail-config.yml:/etc/promtail/config.yml
+    command: -config.file=/etc/promtail/config.yml
+    depends_on:
+      - loki
+#
+#  # ========================
+#  # Platform Services
+#  # ========================
+#  discovery-server:
+#    build:
+#      context: ./backend
+#      dockerfile: platform/discovery-server/Dockerfile
+#    ports:
+#      - "8761:8761"
+#    env_file: ./backend/platform/discovery-server/.env
+#    healthcheck:
+#      test: ["CMD-SHELL", "curl -f http://localhost:8761/actuator/health || exit 1"]
+#      interval: 10s
+#      retries: 10
+#      start_period: 30s
+#
+#  gateway-server:
+#    build:
+#      context: ./backend
+#      dockerfile: platform/gateway-server/Dockerfile
+#    ports:
+#      - "8080:8080"
+#    env_file: ./backend/platform/gateway-server/.env
+#    depends_on:
+#      discovery-server:
+#        condition: service_healthy
+#      redis:
+#        condition: service_healthy
+#
+#  notification-service:
+#    build:
+#      context: ./backend
+#      dockerfile: platform/notification-service/Dockerfile
+#    ports:
+#      - "8082:8082"
+#    env_file: ./backend/platform/notification-service/.env
+#    depends_on:
+#      postgres:
+#        condition: service_healthy
+#      rabbitmq:
+#        condition: service_healthy
+#      discovery-server:
+#        condition: service_healthy
+#      redis:
+#        condition: service_healthy
+#
+#  # ========================
+#  # Domain Services
+#  # ========================
+#  todo-service:
+#    build:
+#      context: ./backend
+#      dockerfile: services/todo-service/Dockerfile
+#    ports:
+#      - "8081:8081"
+#    env_file: ./backend/services/todo-service/.env
+#    depends_on:
+#      postgres:
+#        condition: service_healthy
+#      rabbitmq:
+#        condition: service_healthy
+#      discovery-server:
+#        condition: service_healthy
+#      redis:
+#        condition: service_healthy
+#
+#  # ========================
+#  # Frontend
+#  # ========================
+#  frontend:
+#    build:
+#      context: ./frontend
+#      dockerfile: Dockerfile
+#    ports:
+#      - "4200:80"
+#    env_file: ./frontend/.env
+#    depends_on:
+#      - gateway-server
+
+volumes:
+  postgres_data:
+  pgadmin_data:
+  rabbitmq_data:
+  redis_data:
+  prometheus_data:
+  grafana_data:
+  loki_data:

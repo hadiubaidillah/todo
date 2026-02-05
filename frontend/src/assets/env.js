@@ -1,0 +1,8 @@
+(function(window) {
+  window.__env = {
+    KEYCLOAK_URL: 'http://localhost:8083',
+    KEYCLOAK_REALM: 'todo',
+    KEYCLOAK_CLIENT_ID: 'todo-angular',
+    API_GATEWAY_URL: 'http://localhost:8080/api/v1'
+  };
+})(this);

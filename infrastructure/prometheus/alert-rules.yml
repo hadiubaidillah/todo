@@ -1,0 +1,49 @@
+groups:
+  - name: service-health
+    rules:
+      - alert: ServiceDown
+        expr: up == 0
+        for: 1m
+        labels:
+          severity: critical
+        annotations:
+          summary: "Service {{ $labels.instance }} is down"
+          description: "{{ $labels.job }} has been down for more than 1 minute."
+
+      - alert: HighResponseTime
+        expr: http_server_requests_seconds_sum / http_server_requests_seconds_count > 2
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "High response time on {{ $labels.instance }}"
+          description: "Average response time is above 2 seconds for 5 minutes."
+
+      - alert: HighErrorRate
+        expr: rate(http_server_requests_seconds_count{status=~"5.."}[5m]) / rate(http_server_requests_seconds_count[5m]) > 0.1
+        for: 5m
+        labels:
+          severity: critical
+        annotations:
+          summary: "High error rate on {{ $labels.instance }}"
+          description: "More than 10% of requests are returning 5xx errors."
+
+      - alert: HighMemoryUsage
+        expr: jvm_memory_used_bytes{area="heap"} / jvm_memory_max_bytes{area="heap"} > 0.9
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "High JVM heap usage on {{ $labels.instance }}"
+          description: "JVM heap usage is above 90%."
+
+  - name: circuit-breaker
+    rules:
+      - alert: CircuitBreakerOpen
+        expr: resilience4j_circuitbreaker_state{state="open"} == 1
+        for: 1m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Circuit breaker {{ $labels.name }} is open"
+          description: "Circuit breaker {{ $labels.name }} on {{ $labels.instance }} has been open for 1 minute."

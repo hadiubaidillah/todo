@@ -1,0 +1,45 @@
+# Build
+build/
+out/
+target/
+*.class
+*.jar
+*.war
+
+# Gradle
+.gradle/
+!backend/gradle/
+
+# IDE
+.idea/
+*.iml
+*.ipr
+*.iws
+.vscode/
+.settings/
+.project
+.classpath
+
+# Node
+node_modules/
+dist/
+.angular/
+
+# Environment
+.env
+!.env.example
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Docker
+docker-compose.override.yml
+
+# Logs
+*.log
+logs/
+
+# Kubernetes secrets (actual values)
+k8s/secrets/*.yaml
+!k8s/secrets/*.example.yaml

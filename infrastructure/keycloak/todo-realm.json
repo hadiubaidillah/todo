@@ -1,0 +1,111 @@
+{
+  "realm": "todo",
+  "enabled": true,
+  "sslRequired": "none",
+  "registrationAllowed": true,
+  "loginWithEmailAllowed": true,
+  "duplicateEmailsAllowed": false,
+  "resetPasswordAllowed": true,
+  "editUsernameAllowed": false,
+  "bruteForceProtected": true,
+  "roles": {
+    "realm": [
+      {
+        "name": "USER",
+        "description": "Standard user role"
+      },
+      {
+        "name": "ADMIN",
+        "description": "Administrator role"
+      }
+    ]
+  },
+  "defaultRoles": ["USER"],
+  "clients": [
+    {
+      "clientId": "todo-angular",
+      "name": "Todo Angular Frontend",
+      "enabled": true,
+      "publicClient": true,
+      "directAccessGrantsEnabled": true,
+      "standardFlowEnabled": true,
+      "implicitFlowEnabled": false,
+      "redirectUris": [
+        "http://localhost:4200/*",
+        "http://localhost:80/*"
+      ],
+      "webOrigins": [
+        "http://localhost:4200",
+        "http://localhost"
+      ],
+      "protocol": "openid-connect",
+      "fullScopeAllowed": true,
+      "defaultClientScopes": [
+        "web-origins",
+        "profile",
+        "roles",
+        "email",
+        "basic"
+      ]
+    },
+    {
+      "clientId": "platform-services",
+      "name": "Platform Backend Services",
+      "enabled": true,
+      "bearerOnly": true,
+      "protocol": "openid-connect",
+      "fullScopeAllowed": true
+    }
+  ],
+  "users": [
+    {
+      "username": "demo",
+      "email": "demo@example.com",
+      "firstName": "Demo",
+      "lastName": "User",
+      "enabled": true,
+      "emailVerified": true,
+      "credentials": [
+        {
+          "type": "password",
+          "value": "demo",
+          "temporary": false
+        }
+      ],
+      "realmRoles": ["USER"]
+    }
+  ],
+  "smtpServer": {},
+  "identityProviders": [
+    {
+      "alias": "google",
+      "providerId": "google",
+      "enabled": true,
+      "trustEmail": true,
+      "storeToken": false,
+      "addReadTokenRoleOnCreate": false,
+      "firstBrokerLoginFlowAlias": "first broker login",
+      "config": {
+        "clientId": "${GOOGLE_CLIENT_ID}",
+        "clientSecret": "${GOOGLE_CLIENT_SECRET}",
+        "defaultScope": "openid profile email",
+        "syncMode": "IMPORT"
+      }
+    }
+  ],
+  "identityProviderMappers": [
+    {
+      "name": "google-email-mapper",
+      "identityProviderAlias": "google",
+      "identityProviderMapper": "hardcoded-user-session-attribute-idp-mapper",
+      "config": {
+        "syncMode": "INHERIT",
+        "attribute": "email",
+        "attribute.value": "${CLAIM.email}"
+      }
+    }
+  ],
+  "accessTokenLifespan": 300,
+  "ssoSessionIdleTimeout": 1800,
+  "ssoSessionMaxLifespan": 36000
+}
