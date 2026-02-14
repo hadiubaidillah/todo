@@ -6,57 +6,59 @@ spring:
     name: gateway-server
   cloud:
     gateway:
-      discovery:
-        locator:
-          enabled: true
-      routes:
-        # --- Platform Routes ---
-        - id: notification-sse
-          uri: lb://NOTIFICATION-SERVICE
-          predicates:
-            - Path=/api/v1/notifications/stream
-          # No CircuitBreaker/TimeLimiter so SSE connections stay open
+      server:
+        webflux:
+          discovery:
+            locator:
+              enabled: true
+          routes:
+            # --- Platform Routes ---
+            - id: notification-sse
+              uri: lb://NOTIFICATION-SERVICE
+              predicates:
+                - Path=/api/v1/notifications/stream
+              # No CircuitBreaker/TimeLimiter so SSE connections stay open
 
-        - id: notification-service
-          uri: lb://NOTIFICATION-SERVICE
-          predicates:
-            - Path=/api/v1/notifications/**
-          filters:
-            - name: CircuitBreaker
-              args:
-                name: notificationService
-                fallbackUri: forward:/fallback/notification
+            - id: notification-service
+              uri: lb://NOTIFICATION-SERVICE
+              predicates:
+                - Path=/api/v1/notifications/**
+              filters:
+                - name: CircuitBreaker
+                  args:
+                    name: notificationService
+                    fallbackUri: forward:/fallback/notification
 
-        # --- Domain Service Routes ---
-        - id: todo-service
-          uri: lb://TODO-SERVICE
-          predicates:
-            - Path=/api/v1/tasks/**
-          filters:
-            - name: RequestRateLimiter
-              args:
-                redis-rate-limiter.replenishRate: 10
-                redis-rate-limiter.burstCapacity: 20
-                key-resolver: "#{@userKeyResolver}"
-            - name: CircuitBreaker
-              args:
-                name: todoService
-                fallbackUri: forward:/fallback/todo
+            # --- Domain Service Routes ---
+            - id: todo-service
+              uri: lb://TODO-SERVICE
+              predicates:
+                - Path=/api/v1/tasks/**
+              filters:
+                - name: RequestRateLimiter
+                  args:
+                    redis-rate-limiter.replenishRate: 10
+                    redis-rate-limiter.burstCapacity: 20
+                    key-resolver: "#{@userKeyResolver}"
+                - name: CircuitBreaker
+                  args:
+                    name: todoService
+                    fallbackUri: forward:/fallback/todo
 
-        # --- OpenAPI Docs Routes ---
-        - id: todo-service-docs
-          uri: lb://TODO-SERVICE
-          predicates:
-            - Path=/v3/api-docs/todo-service
-          filters:
-            - RewritePath=/v3/api-docs/todo-service, /v3/api-docs
+            # --- OpenAPI Docs Routes ---
+            - id: todo-service-docs
+              uri: lb://TODO-SERVICE
+              predicates:
+                - Path=/v3/api-docs/todo-service
+              filters:
+                - RewritePath=/v3/api-docs/todo-service, /v3/api-docs
 
-        - id: notification-service-docs
-          uri: lb://NOTIFICATION-SERVICE
-          predicates:
-            - Path=/v3/api-docs/notification-service
-          filters:
-            - RewritePath=/v3/api-docs/notification-service, /v3/api-docs
+            - id: notification-service-docs
+              uri: lb://NOTIFICATION-SERVICE
+              predicates:
+                - Path=/v3/api-docs/notification-service
+              filters:
+                - RewritePath=/v3/api-docs/notification-service, /v3/api-docs
 
   data:
     redis:
@@ -116,9 +118,9 @@ management:
   tracing:
     sampling:
       probability: 1.0
-  zipkin:
-    tracing:
-      endpoint: ${ZIPKIN_URL:http://localhost:9411}/api/v2/spans
+    export:
+      zipkin:
+        endpoint: ${ZIPKIN_URL:http://localhost:9411}/api/v2/spans
   metrics:
     tags:
       application: ${spring.application.name}

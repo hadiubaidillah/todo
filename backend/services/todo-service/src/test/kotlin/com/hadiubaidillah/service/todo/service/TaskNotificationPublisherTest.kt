@@ -57,14 +57,14 @@ class TaskNotificationPublisherTest {
 
     /** CircuitBreaker that directly executes the supplier */
     private val directCircuitBreaker = object : CircuitBreaker {
-        override fun <T> run(toRun: Supplier<T>, fallback: Function<Throwable, T>): T {
-            return toRun.get()
-        }
+        override fun <T> run(toRun: Supplier<T>): T = toRun.get()
+        override fun <T> run(toRun: Supplier<T>, fallback: Function<Throwable?, T>): T = toRun.get()
     }
 
     /** CircuitBreaker that always triggers the fallback */
     private val fallbackCircuitBreaker = object : CircuitBreaker {
-        override fun <T> run(toRun: Supplier<T>, fallback: Function<Throwable, T>): T {
+        override fun <T> run(toRun: Supplier<T>): T = throw RuntimeException("RabbitMQ connection refused")
+        override fun <T> run(toRun: Supplier<T>, fallback: Function<Throwable?, T>): T {
             return fallback.apply(RuntimeException("RabbitMQ connection refused"))
         }
     }
