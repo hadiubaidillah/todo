@@ -101,9 +101,13 @@ import { NotificationPanelComponent } from '../notification-panel/notification-p
           class="flex items-center gap-2 bg-[#2e7d32] hover:bg-[#388e3c] text-white rounded-full pl-1 pr-4 py-1 transition-colors cursor-pointer border-none"
           (click)="userMenu.toggle($event)"
         >
-          <div class="w-8 h-8 rounded-full bg-[#a5d6a7] flex items-center justify-center">
-            <i class="pi pi-user text-[#2e7d32]"></i>
-          </div>
+          @if (userPicture) {
+            <img [src]="userPicture" alt="User" class="w-8 h-8 rounded-full object-cover" referrerpolicy="no-referrer">
+          } @else {
+            <div class="w-8 h-8 rounded-full bg-[#a5d6a7] flex items-center justify-center">
+              <i class="pi pi-user text-[#2e7d32]"></i>
+            </div>
+          }
           <span class="text-sm font-medium">{{ userName }}</span>
         </button>
         <p-menu #userMenu [popup]="true" [model]="userMenuItems" styleClass="user-dropdown" />
@@ -115,6 +119,7 @@ export class HeaderComponent implements OnInit, OnDestroy {
   notificationService = inject(NotificationService);
   private keycloak = inject(KeycloakService);
   userName = '';
+  userPicture = '';
   userMenuItems: MenuItem[] = [];
   notifMenuItems: MenuItem[] = [{ label: '' }];
 
@@ -125,7 +130,9 @@ export class HeaderComponent implements OnInit, OnDestroy {
     this.notificationService.initialize();
 
     this.keycloak.loadUserProfile().then((profile) => {
+      console.log('profile: ', profile)
       this.userName = `${profile.firstName || ''} ${profile.lastName || ''}`.trim() || profile.username || '';
+      this.userPicture = (profile as any).attributes?.picture?.[0] || '';
       this.userMenuItems = [
         {
           label: this.userName,

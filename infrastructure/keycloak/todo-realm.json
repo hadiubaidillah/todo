@@ -103,8 +103,64 @@
         "attribute": "email",
         "attribute.value": "${CLAIM.email}"
       }
+    },
+    {
+      "name": "google-picture-mapper",
+      "identityProviderAlias": "google",
+      "identityProviderMapper": "google-user-attribute-mapper",
+      "config": {
+        "syncMode": "FORCE",
+        "jsonField": "picture",
+        "userAttribute": "picture"
+      }
     }
   ],
+  "clientScopes": [
+    {
+      "name": "profile",
+      "protocol": "openid-connect",
+      "protocolMappers": [
+        {
+          "name": "picture",
+          "protocol": "openid-connect",
+          "protocolMapper": "oidc-usermodel-attribute-mapper",
+          "config": {
+            "user.attribute": "picture",
+            "claim.name": "picture",
+            "jsonType.label": "String",
+            "id.token.claim": "true",
+            "access.token.claim": "true",
+            "userinfo.token.claim": "true"
+          }
+        }
+      ]
+    }
+  ],
+  "userProfile": {
+    "attributes": [
+      {
+        "name": "username",
+        "permissions": { "view": ["admin", "user"], "edit": ["admin", "user"] }
+      },
+      {
+        "name": "email",
+        "permissions": { "view": ["admin", "user"], "edit": ["admin", "user"] }
+      },
+      {
+        "name": "firstName",
+        "permissions": { "view": ["admin", "user"], "edit": ["admin", "user"] }
+      },
+      {
+        "name": "lastName",
+        "permissions": { "view": ["admin", "user"], "edit": ["admin", "user"] }
+      },
+      {
+        "name": "picture",
+        "displayName": "Picture URL",
+        "permissions": { "view": ["admin", "user"], "edit": ["admin"] }
+      }
+    ]
+  },
   "accessTokenLifespan": 300,
   "ssoSessionIdleTimeout": 1800,
   "ssoSessionMaxLifespan": 36000
