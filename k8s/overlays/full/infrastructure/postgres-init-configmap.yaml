@@ -1,0 +1,9 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: postgres-init
+  namespace: todo
+data:
+  init.sql: |
+    CREATE DATABASE platform_notification_db;
+    CREATE DATABASE todo_db;

@@ -1,0 +1,10 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: frontend-config
+  namespace: todo
+data:
+  KEYCLOAK_URL: https://keycloak.hadiubaidillah.com
+  KEYCLOAK_REALM: todo
+  KEYCLOAK_CLIENT_ID: todo-angular
+  API_GATEWAY_URL: https://todo.hadiubaidillah.com/api/v1

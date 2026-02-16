@@ -1,0 +1,24 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+resources:
+  - ../../base
+  - configmaps/discovery-config.yaml
+  - configmaps/gateway-config.yaml
+  - configmaps/todo-service-config.yaml
+  - configmaps/notification-service-config.yaml
+  - configmaps/frontend-config.yaml
+  - infrastructure/deployments/postgres.yaml
+  - infrastructure/deployments/rabbitmq.yaml
+  - infrastructure/deployments/keycloak.yaml
+  - infrastructure/deployments/redis.yaml
+  - infrastructure/deployments/zipkin.yaml
+  - infrastructure/services/postgres-svc.yaml
+  - infrastructure/services/rabbitmq-svc.yaml
+  - infrastructure/services/keycloak-svc.yaml
+  - infrastructure/services/redis-svc.yaml
+  - infrastructure/services/zipkin-svc.yaml
+  - infrastructure/postgres-pvc.yaml
+  - infrastructure/postgres-init-configmap.yaml
+  - keycloak-secret.yaml
+patches:
+  - path: ingress-patch.yaml

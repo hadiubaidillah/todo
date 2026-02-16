@@ -1,0 +1,37 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: discovery-server
+  namespace: todo
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: discovery-server
+  template:
+    metadata:
+      labels:
+        app: discovery-server
+    spec:
+      imagePullSecrets:
+        - name: harbor-secret
+      containers:
+        - name: discovery-server
+          image: harbor.hadiubaidillah.com/todo/discovery-server:latest
+          ports:
+            - containerPort: 8761
+          envFrom:
+            - configMapRef:
+                name: discovery-config
+          readinessProbe:
+            httpGet:
+              path: /actuator/health
+              port: 8761
+            initialDelaySeconds: 30
+            periodSeconds: 10
+          livenessProbe:
+            httpGet:
+              path: /actuator/health
+              port: 8761
+            initialDelaySeconds: 60
+            periodSeconds: 15
