@@ -8,9 +8,8 @@ export const routes: Routes = [
     component: MainLayoutComponent,
     canActivate: [authGuard],
     children: [
-      { path: '', redirectTo: 'todo', pathMatch: 'full' },
       {
-        path: 'todo',
+        path: '',
         loadChildren: () =>
           import('./features/todo/todo.routes').then((m) => m.todoRoutes),
       },
