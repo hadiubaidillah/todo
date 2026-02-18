@@ -45,6 +45,10 @@ services:
       KC_DB_PASSWORD: postgres
       GOOGLE_CLIENT_ID: ${GOOGLE_CLIENT_ID:-your-google-client-id}
       GOOGLE_CLIENT_SECRET: ${GOOGLE_CLIENT_SECRET:-your-google-client-secret}
+      GITHUB_CLIENT_ID: ${GITHUB_CLIENT_ID:-your-github-client-id}
+      GITHUB_CLIENT_SECRET: ${GITHUB_CLIENT_SECRET:-your-github-client-secret}
+      FACEBOOK_CLIENT_ID: ${FACEBOOK_CLIENT_ID:-your-facebook-app-id}
+      FACEBOOK_CLIENT_SECRET: ${FACEBOOK_CLIENT_SECRET:-your-facebook-app-secret}
     volumes:
       - ./infrastructure/keycloak/todo-realm.json:/opt/keycloak/data/import/todo-realm.json
     command: start-dev --import-realm

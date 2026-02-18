@@ -91,6 +91,36 @@
         "defaultScope": "openid profile email",
         "syncMode": "IMPORT"
       }
+    },
+    {
+      "alias": "github",
+      "providerId": "github",
+      "enabled": true,
+      "trustEmail": true,
+      "storeToken": false,
+      "addReadTokenRoleOnCreate": false,
+      "firstBrokerLoginFlowAlias": "first broker login",
+      "config": {
+        "clientId": "${GITHUB_CLIENT_ID}",
+        "clientSecret": "${GITHUB_CLIENT_SECRET}",
+        "defaultScope": "user:email",
+        "syncMode": "IMPORT"
+      }
+    },
+    {
+      "alias": "facebook",
+      "providerId": "facebook",
+      "enabled": true,
+      "trustEmail": true,
+      "storeToken": false,
+      "addReadTokenRoleOnCreate": false,
+      "firstBrokerLoginFlowAlias": "first broker login",
+      "config": {
+        "clientId": "${FACEBOOK_CLIENT_ID}",
+        "clientSecret": "${FACEBOOK_CLIENT_SECRET}",
+        "defaultScope": "email",
+        "syncMode": "IMPORT"
+      }
     }
   ],
   "identityProviderMappers": [
@@ -111,6 +141,16 @@
       "config": {
         "syncMode": "FORCE",
         "jsonField": "picture",
+        "userAttribute": "picture"
+      }
+    },
+    {
+      "name": "github-picture-mapper",
+      "identityProviderAlias": "github",
+      "identityProviderMapper": "github-user-attribute-mapper",
+      "config": {
+        "syncMode": "FORCE",
+        "jsonField": "avatar_url",
         "userAttribute": "picture"
       }
     }

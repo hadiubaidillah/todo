@@ -28,7 +28,7 @@ Supporting infrastructure services:
 |---|---|
 | `PostgreSQL 18.2` | Primary database (separate schema per service). |
 | `RabbitMQ 4.0` | Asynchronous messaging between microservices (with delayed message exchange). |
-| `Keycloak 26.5.3` | Authentication and authorization via OAuth2 and OpenID Connect. Supports Google login. |
+| `Keycloak 26.5.3` | Authentication and authorization via OAuth2 and OpenID Connect. Supports Google, GitHub, and Facebook login. |
 | `Redis` | Caching layer used by the gateway and backend services. |
 | `Zipkin` | Distributed tracing. |
 | `Prometheus + Grafana` | Metrics collection and visualization. |
@@ -99,7 +99,7 @@ The frontend is an Angular 21 SPA styled with PrimeNG and Tailwind CSS.
 
 <img width="1024px" src=".github/login_required.png"/>
 
-To use the application, users must authenticate via Keycloak. Login with a local account or through Google.
+To use the application, users must authenticate via Keycloak. Login with a local account or through Google, GitHub, or Facebook.
 
 <img width="1024px" src=".github/login.png"/>
 
@@ -127,7 +127,7 @@ When creating a task, you can set a title, description, and due date. The notifi
 
 ### Environment variables
 
-Copy the example file and fill in the Google OAuth credentials (required for Google login in Keycloak):
+Copy the example file and fill in the OAuth credentials for social login providers:
 
 ```bash
 cp .env.example .env
@@ -138,6 +138,10 @@ cp .env.example .env
 ```env
 GOOGLE_CLIENT_ID=your-google-client-id
 GOOGLE_CLIENT_SECRET=your-google-client-secret
+GITHUB_CLIENT_ID=your-github-client-id
+GITHUB_CLIENT_SECRET=your-github-client-secret
+FACEBOOK_CLIENT_ID=your-facebook-app-id
+FACEBOOK_CLIENT_SECRET=your-facebook-app-secret
 ```
 
 For email notifications, edit the notification service environment in `docker-compose.yml`:
@@ -212,7 +216,7 @@ The ingress is configured for:
 | Service Discovery | Spring Cloud Netflix Eureka |
 | API Gateway | Spring Cloud Gateway, Spring Cloud Loadbalancer |
 | Frontend | Angular 21, PrimeNG, Tailwind CSS 4 |
-| Auth | Keycloak 26.5.3 (OAuth2, OpenID Connect, Google IdP) |
+| Auth | Keycloak 26.5.3 (OAuth2, OpenID Connect, Google / GitHub / Facebook IdP) |
 | Messaging | RabbitMQ 4.0 |
 | Database | PostgreSQL 18.2 |
 | Cache | Redis |
