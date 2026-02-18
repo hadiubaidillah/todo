@@ -30,7 +30,7 @@ subprojects {
 
         configure<org.jetbrains.kotlin.gradle.dsl.KotlinJvmProjectExtension> {
             compilerOptions {
-                jvmTarget.set(org.jetbrains.kotlin.gradle.dsl.JvmTarget.JVM_21)
+                jvmTarget.set(org.jetbrains.kotlin.gradle.dsl.JvmTarget.JVM_25)
                 freeCompilerArgs.add("-Xjsr305=strict")
             }
         }
@@ -50,7 +50,7 @@ subprojects {
 
         configure<JavaPluginExtension> {
             toolchain {
-                languageVersion.set(JavaLanguageVersion.of(21))
+                languageVersion.set(JavaLanguageVersion.of(25))
             }
         }
     }
