@@ -1,4 +1,4 @@
-FROM gradle:8.12-jdk25 AS builder
+FROM gradle:jdk25 AS builder
 WORKDIR /app
 COPY . .
 RUN gradle :platform:notification-service:bootJar --no-daemon
