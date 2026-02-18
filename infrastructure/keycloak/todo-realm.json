@@ -136,31 +136,6 @@
       ]
     }
   ],
-  "userProfile": {
-    "attributes": [
-      {
-        "name": "username",
-        "permissions": { "view": ["admin", "user"], "edit": ["admin", "user"] }
-      },
-      {
-        "name": "email",
-        "permissions": { "view": ["admin", "user"], "edit": ["admin", "user"] }
-      },
-      {
-        "name": "firstName",
-        "permissions": { "view": ["admin", "user"], "edit": ["admin", "user"] }
-      },
-      {
-        "name": "lastName",
-        "permissions": { "view": ["admin", "user"], "edit": ["admin", "user"] }
-      },
-      {
-        "name": "picture",
-        "displayName": "Picture URL",
-        "permissions": { "view": ["admin", "user"], "edit": ["admin"] }
-      }
-    ]
-  },
   "accessTokenLifespan": 300,
   "ssoSessionIdleTimeout": 1800,
   "ssoSessionMaxLifespan": 36000
