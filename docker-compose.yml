@@ -73,10 +73,11 @@ services:
     image: redis:latest
     ports:
       - "6379:6379"
+    command: redis-server --requirepass ${REDIS_PASSWORD:-redis}
     volumes:
       - redis_data:/data
     healthcheck:
-      test: ["CMD", "redis-cli", "ping"]
+      test: ["CMD", "redis-cli", "-a", "${REDIS_PASSWORD:-redis}", "ping"]
       interval: 5s
       retries: 5
 
