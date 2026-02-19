@@ -1,8 +1,14 @@
 import { Component, effect, inject, input, model, output } from '@angular/core';
-import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
+import { AbstractControl, FormBuilder, ReactiveFormsModule, ValidationErrors, Validators } from '@angular/forms';
 import { Dialog } from 'primeng/dialog';
 import { DatePicker } from 'primeng/datepicker';
 import { Task, TaskDTO } from '../../models/task.model';
+
+function futureDateValidator(control: AbstractControl): ValidationErrors | null {
+  const value: Date | null = control.value;
+  if (!value) return null;
+  return value <= new Date() ? { pastDate: true } : null;
+}
 
 @Component({
   selector: 'app-edit-task-dialog',
@@ -54,10 +60,14 @@ import { Task, TaskDTO } from '../../models/task.model';
             [showTime]="true"
             [showIcon]="true"
             [appendTo]="'body'"
+            [minDate]="today"
             dateFormat="mm/dd/yy"
             placeholder="Select date and time"
             styleClass="w-full"
           />
+          @if (form.controls.endsIn.touched && form.controls.endsIn.hasError('pastDate')) {
+            <small class="text-red-500 text-xs">End date must be in the future</small>
+          }
         </div>
       </form>
 
@@ -88,10 +98,12 @@ export class EditTaskDialogComponent {
   task = input<Task | null>(null);
   taskEdited = output<TaskDTO>();
 
+  today = new Date();
+
   form = this.fb.group({
     name: ['', [Validators.required, Validators.maxLength(255)]],
     description: [''],
-    endsIn: [null as Date | null],
+    endsIn: [null as Date | null, futureDateValidator],
   });
 
   constructor() {
