@@ -13,10 +13,12 @@ import org.springframework.amqp.rabbit.core.RabbitTemplate
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.cache.annotation.CacheEvict
 import org.springframework.cache.annotation.Cacheable
+import org.springframework.data.redis.core.StringRedisTemplate
 import org.springframework.mail.javamail.JavaMailSender
 import org.springframework.mail.javamail.MimeMessageHelper
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
+import java.time.Duration
 import java.time.OffsetDateTime
 import java.time.temporal.ChronoUnit
 import java.util.UUID
@@ -27,7 +29,8 @@ class NotificationService(
     private val notificationUserRepository: NotificationUserRepository,
     private val rabbitTemplate: RabbitTemplate,
     private val mailSender: JavaMailSender,
-    private val sseEmitterService: SseEmitterService
+    private val sseEmitterService: SseEmitterService,
+    private val redisTemplate: StringRedisTemplate
 ) {
     private val log = LoggerFactory.getLogger(javaClass)
 
@@ -62,8 +65,13 @@ class NotificationService(
 
     fun scheduleEmail(event: NotificationEvent) {
         val delayMillis = ChronoUnit.MILLIS.between(OffsetDateTime.now(), event.emailDeliveryAt)
+        val emailId = UUID.randomUUID()
+        val redisKey = "email:active:${event.sourceService}:${event.sourceId}"
+        redisTemplate.opsForValue().set(redisKey, emailId.toString(), Duration.ofDays(7))
+
         if (delayMillis <= 0) {
             sendEmail(event.userEmail!!, event.userName, event.title, event.message)
+            redisTemplate.delete(redisKey)
             return
         }
 
@@ -74,7 +82,8 @@ class NotificationService(
             email = event.userEmail!!,
             userName = event.userName,
             subject = event.title,
-            body = event.message
+            body = event.message,
+            emailId = emailId
         )
 
         val postProcessor = MessagePostProcessor { message ->
@@ -87,6 +96,13 @@ class NotificationService(
     }
 
     fun processEmailDelivery(event: EmailScheduleEvent) {
+        val redisKey = "email:active:${event.sourceService}:${event.sourceId}"
+        val activeEmailId = redisTemplate.opsForValue().get(redisKey)
+        if (activeEmailId != event.emailId.toString()) {
+            log.info("Skipping superseded email for {}:{}", event.sourceService, event.sourceId)
+            return
+        }
+        redisTemplate.delete(redisKey)
         sendEmail(event.email, event.userName, event.subject, event.body)
     }
 
@@ -171,7 +187,7 @@ class NotificationService(
                     <p>Hello ${name ?: "User"},</p>
                     <p>$body</p>
                     <br/>
-                    <p>— Microservices Platform</p>
+                    <p>— TODO Application</p>
                 </body>
                 </html>
                 """.trimIndent(),

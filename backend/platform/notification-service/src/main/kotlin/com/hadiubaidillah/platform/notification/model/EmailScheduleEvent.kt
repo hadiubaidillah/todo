@@ -9,5 +9,6 @@ data class EmailScheduleEvent(
     val email: String,
     val userName: String?,
     val subject: String,
-    val body: String
+    val body: String,
+    val emailId: UUID = UUID.randomUUID()
 )
