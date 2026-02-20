@@ -118,7 +118,7 @@ import { environment } from '../../../../environments/environment';
         <div class="relative">
           <button
             class="w-10 h-10 rounded-full bg-[#2a4a4a] flex items-center justify-center text-white hover:bg-[#3a5a5a] transition-colors cursor-pointer border-none"
-            (click)="notifMenu.toggle($event)"
+            (click)="notifOpen = !notifOpen"
           >
             <i class="pi pi-bell text-lg"></i>
           </button>
@@ -127,12 +127,13 @@ import { environment } from '../../../../environments/environment';
               {{ notificationService.unreadCount() }}
             </span>
           }
+          @if (notifOpen) {
+            <div class="fixed inset-0 z-40 sm:hidden" (click)="notifOpen = false"></div>
+            <div class="fixed inset-0 z-50 sm:absolute sm:inset-auto sm:top-full sm:right-0 sm:mt-2">
+              <app-notification-panel (close)="notifOpen = false" />
+            </div>
+          }
         </div>
-        <p-menu #notifMenu [popup]="true" [model]="notifMenuItems" styleClass="notification-dropdown">
-          <ng-template #item>
-            <app-notification-panel />
-          </ng-template>
-        </p-menu>
 
         <!-- Services menu -->
         <button
@@ -168,7 +169,7 @@ export class HeaderComponent implements OnInit, OnDestroy {
   userName = '';
   userPicture = '';
   userMenuItems: MenuItem[] = [];
-  notifMenuItems: MenuItem[] = [{ label: '' }];
+  notifOpen = false;
   servicesMenuItems: MenuItem[] = [
     { label: 'Source Code',  icon: 'pi pi-github',     command: () => window.open('https://github.com/hadiubaidillah/todo', '_blank') },
     { label: 'Swagger',      icon: 'pi pi-file',                 command: () => window.open(environment.services.swagger,      '_blank') },
