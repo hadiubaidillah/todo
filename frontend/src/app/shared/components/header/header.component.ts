@@ -140,6 +140,11 @@ export class HeaderComponent implements OnInit, OnDestroy {
           disabled: true,
         },
         {
+          label: 'Manage Account',
+          icon: 'pi pi-cog',
+          command: () => window.open(this.keycloak.getKeycloakInstance().createAccountUrl(), '_blank'),
+        },
+        {
           label: 'Logout',
           icon: 'pi pi-sign-out',
           command: () => this.logout(),
