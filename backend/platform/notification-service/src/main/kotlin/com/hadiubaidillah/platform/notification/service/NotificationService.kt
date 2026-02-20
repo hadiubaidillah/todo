@@ -56,7 +56,21 @@ class NotificationService(
 
         ensureUserExists(event.userId, event.userEmail, event.userName)
 
-        if (event.scheduleEmail && event.emailDeliveryAt != null && event.userEmail != null) {
+        if (event.type in listOf("COMPLETED", "DELETION")) {
+            redisTemplate.delete("email:active:${event.sourceService}:${event.sourceId}")
+            val emailAddress = event.userEmail
+            if (emailAddress != null) {
+                sendEmail(emailAddress, event.userName, event.title, event.message)
+            } else {
+                val storedUser = notificationUserRepository.findById(event.userId).orElse(null)
+                if (storedUser != null) {
+                    val storedName = "${storedUser.firstName ?: ""} ${storedUser.lastName ?: ""}".trim().ifEmpty { null }
+                    sendEmail(storedUser.email, storedName, event.title, event.message)
+                } else {
+                    log.warn("No email address found for user {} on {} event, skipping email", event.userId, event.type)
+                }
+            }
+        } else if (event.scheduleEmail && event.emailDeliveryAt != null && event.userEmail != null) {
             scheduleEmail(event)
         }
 

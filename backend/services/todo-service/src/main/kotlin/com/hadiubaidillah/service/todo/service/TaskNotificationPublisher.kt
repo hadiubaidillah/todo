@@ -7,6 +7,7 @@ import org.springframework.amqp.rabbit.core.RabbitTemplate
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.cloud.client.circuitbreaker.CircuitBreakerFactory
 import org.springframework.stereotype.Service
+import java.time.OffsetDateTime
 
 @Service
 class TaskNotificationPublisher(
@@ -77,7 +78,11 @@ class TaskNotificationPublisher(
                 "sourceId" to task.id.toString(),
                 "type" to "DELETION",
                 "title" to "Task Deleted: ${task.name}",
-                "message" to "Task '${task.name}' has been deleted"
+                "message" to "Task '${task.name}' has been deleted",
+                "scheduleEmail" to true,
+                "emailDeliveryAt" to OffsetDateTime.now(),
+                "userEmail" to author.email,
+                "userName" to "${author.firstName ?: ""} ${author.lastName ?: ""}".trim()
             )
             rabbitTemplate.convertAndSend(exchange, notificationEventsRoutingKey, event)
             log.info("Published task deletion notification for task: {}", task.id)
@@ -95,7 +100,11 @@ class TaskNotificationPublisher(
                 "sourceId" to task.id.toString(),
                 "type" to "OVERDUE",
                 "title" to "Task Overdue: ${task.name}",
-                "message" to "Task '${task.name}' has passed its deadline"
+                "message" to "Task '${task.name}' has passed its deadline",
+                "scheduleEmail" to true,
+                "emailDeliveryAt" to OffsetDateTime.now(),
+                "userEmail" to author.email,
+                "userName" to "${author.firstName ?: ""} ${author.lastName ?: ""}".trim()
             )
             rabbitTemplate.convertAndSend(exchange, notificationEventsRoutingKey, event)
             log.info("Published task overdue notification for task: {}", task.id)
@@ -118,7 +127,11 @@ class TaskNotificationPublisher(
                 "sourceId" to task.id.toString(),
                 "type" to "COMPLETED",
                 "title" to "Task Completed: ${task.name}",
-                "message" to message
+                "message" to message,
+                "scheduleEmail" to true,
+                "emailDeliveryAt" to OffsetDateTime.now(),
+                "userEmail" to author.email,
+                "userName" to "${author.firstName ?: ""} ${author.lastName ?: ""}".trim()
             )
             rabbitTemplate.convertAndSend(exchange, notificationEventsRoutingKey, event)
             log.info("Published task completed notification for task: {}", task.id)
@@ -136,7 +149,11 @@ class TaskNotificationPublisher(
                 "sourceId" to task.id.toString(),
                 "type" to "EXTENDED",
                 "title" to "Task Extended: ${task.name}",
-                "message" to "Task '${task.name}' deadline has been extended${task.endsIn?.let { ", new deadline: $it" } ?: ""}"
+                "message" to "Task '${task.name}' deadline has been extended${task.endsIn?.let { ", new deadline: $it" } ?: ""}",
+                "scheduleEmail" to (task.endsIn != null),
+                "emailDeliveryAt" to task.endsIn,
+                "userEmail" to author.email,
+                "userName" to "${author.firstName ?: ""} ${author.lastName ?: ""}".trim()
             )
             rabbitTemplate.convertAndSend(exchange, notificationEventsRoutingKey, event)
             log.info("Published task extended notification for task: {}", task.id)
