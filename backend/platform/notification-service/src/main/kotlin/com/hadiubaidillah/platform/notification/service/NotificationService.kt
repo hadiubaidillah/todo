@@ -180,7 +180,7 @@ class NotificationService(
             mailSender.send(message)
             log.info("Email sent to {}: {}", to, subject)
         } catch (e: Exception) {
-            log.error("Failed to send email to {}: {}", to, e.message)
+            log.error("Failed to send email to {}: {}", to, e.message, e)
         }
     }
 }

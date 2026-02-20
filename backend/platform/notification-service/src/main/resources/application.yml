@@ -28,6 +28,9 @@ spring:
           auth: true
           starttls:
             enable: true
+            required: true
+          ssl:
+            trust: smtp.gmail.com
   data:
     redis:
       host: ${REDIS_HOST:localhost}
