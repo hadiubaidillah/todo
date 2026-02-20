@@ -6,6 +6,7 @@ import { MenuItem } from 'primeng/api';
 import { KeycloakService } from 'keycloak-angular';
 import { NotificationService } from '../../../core/services/notification.service';
 import { NotificationPanelComponent } from '../notification-panel/notification-panel.component';
+import { environment } from '../../../../environments/environment';
 
 @Component({
   selector: 'app-header',
@@ -65,9 +66,46 @@ import { NotificationPanelComponent } from '../notification-panel/notification-p
     .notification-dropdown .p-menu-list {
       padding: 0;
     }
+    .services-dropdown.p-menu {
+      border-radius: 12px !important;
+      overflow: hidden;
+      box-shadow: 0 4px 24px rgba(0,0,0,0.12) !important;
+      border: 1px solid #e5e7eb !important;
+      min-width: 200px;
+      padding: 6px !important;
+    }
+    .services-dropdown .p-menu-list {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+    }
+    .services-dropdown .p-menu-item {
+      border-radius: 8px;
+      overflow: hidden;
+    }
+    .services-dropdown .p-menu-item-content {
+      border-radius: 8px;
+      transition: background-color 0.15s;
+    }
+    .services-dropdown .p-menu-item-content:hover {
+      background-color: #f3f4f6 !important;
+    }
+    .services-dropdown .p-menu-item-link {
+      padding: 10px 14px !important;
+      gap: 10px;
+    }
+    .services-dropdown .p-menu-item-icon {
+      font-size: 1rem;
+      color: #6b7280;
+    }
+    .services-dropdown .p-menu-item-label {
+      font-size: 0.875rem;
+      font-weight: 500;
+      color: #374151;
+    }
   `],
   template: `
-    <header class="flex items-center justify-between px-6 py-3 bg-[#1b2e35] text-white">
+    <header class="flex items-center justify-between px-1 sm:px-6 py-3 bg-[#1b2e35] text-white">
       <!-- Logo -->
       <div class="flex items-center gap-2">
         <img src="assets/todo.svg" alt="Todo Logo" class="w-9 h-9">
@@ -75,7 +113,7 @@ import { NotificationPanelComponent } from '../notification-panel/notification-p
       </div>
 
       <!-- Right actions -->
-      <div class="flex items-center gap-3">
+      <div class="flex items-center gap-1 sm:gap-2">
         <!-- Notification bell -->
         <div class="relative">
           <button
@@ -96,6 +134,15 @@ import { NotificationPanelComponent } from '../notification-panel/notification-p
           </ng-template>
         </p-menu>
 
+        <!-- Services menu -->
+        <button
+            class="w-10 h-10 rounded-full bg-[#2a4a4a] flex items-center justify-center text-white hover:bg-[#3a5a5a] transition-colors cursor-pointer border-none"
+            (click)="servicesMenu.toggle($event)"
+        >
+          <i class="pi pi-th-large text-lg"></i>
+        </button>
+        <p-menu #servicesMenu [popup]="true" [model]="servicesMenuItems" styleClass="services-dropdown" />
+        
         <!-- User pill -->
         <button
           class="flex items-center gap-2 bg-[#2e7d32] hover:bg-[#388e3c] text-white rounded-full pl-1 pr-4 py-1 transition-colors cursor-pointer border-none"
@@ -122,6 +169,15 @@ export class HeaderComponent implements OnInit, OnDestroy {
   userPicture = '';
   userMenuItems: MenuItem[] = [];
   notifMenuItems: MenuItem[] = [{ label: '' }];
+  servicesMenuItems: MenuItem[] = [
+    { label: 'Source Code',  icon: 'pi pi-github',     command: () => window.open('https://github.com/hadiubaidillah/todo', '_blank') },
+    { label: 'Swagger',      icon: 'pi pi-file',                 command: () => window.open(environment.services.swagger,      '_blank') },
+    { label: 'Eureka',       icon: 'pi pi-server',     command: () => window.open(environment.services.eureka,       '_blank') },
+    { label: 'Grafana',      icon: 'pi pi-chart-pie',  command: () => window.open(environment.services.grafana,      '_blank') },
+    { label: 'Prometheus',   icon: 'pi pi-chart-bar',  command: () => window.open(environment.services.prometheus,   '_blank') },
+    { label: 'Zipkin',       icon: 'pi pi-chart-line', command: () => window.open(environment.services.zipkin,       '_blank') },
+    { label: 'Alertmanager', icon: 'pi pi-bell',       command: () => window.open(environment.services.alertmanager, '_blank') },
+  ];
 
   ngOnInit(): void {
     // Initialize notifications with proper sequencing to prevent race conditions:
