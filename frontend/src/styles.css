@@ -25,3 +25,35 @@ html, body {
 .p-menu .p-menu-list {
   padding: 0.25rem 0 !important;
 }
+
+/* On hover, darken text for contrast with the lighter hover background */
+.user-dropdown .p-menu-item-content:hover .p-menu-item-label,
+.services-dropdown .p-menu-item-content:hover .p-menu-item-label {
+  color: #111827 !important;
+}
+.user-dropdown .p-menu-item-content:hover .p-menu-item-icon,
+.services-dropdown .p-menu-item-content:hover .p-menu-item-icon {
+  color: #374151 !important;
+}
+
+/* Dark mode overrides for header dropdown menus */
+@media (prefers-color-scheme: dark) {
+  .user-dropdown.p-menu,
+  .services-dropdown.p-menu {
+    background-color: #1f2937 !important;
+    border-color: #374151 !important;
+    box-shadow: 0 4px 24px rgba(0, 0, 0, 0.4) !important;
+  }
+  .user-dropdown .p-menu-item-content:hover,
+  .services-dropdown .p-menu-item-content:hover {
+    background-color: #374151 !important;
+  }
+  .user-dropdown .p-menu-item-label,
+  .services-dropdown .p-menu-item-label {
+    color: #e5e7eb !important;
+  }
+  .user-dropdown .p-menu-item-icon,
+  .services-dropdown .p-menu-item-icon {
+    color: #9ca3af !important;
+  }
+}
