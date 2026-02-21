@@ -3,7 +3,7 @@ import { ButtonModule } from 'primeng/button';
 import { BadgeModule } from 'primeng/badge';
 import { Menu } from 'primeng/menu';
 import { MenuItem } from 'primeng/api';
-import { KeycloakService } from 'keycloak-angular';
+import Keycloak from 'keycloak-js';
 import { NotificationService } from '../../../core/services/notification.service';
 import { NotificationPanelComponent } from '../notification-panel/notification-panel.component';
 import { environment } from '../../../../environments/environment';
@@ -165,7 +165,7 @@ import { environment } from '../../../../environments/environment';
 })
 export class HeaderComponent implements OnInit, OnDestroy {
   notificationService = inject(NotificationService);
-  private keycloak = inject(KeycloakService);
+  private keycloak = inject(Keycloak);
   userName = '';
   userPicture = '';
   userMenuItems: MenuItem[] = [];
@@ -199,7 +199,7 @@ export class HeaderComponent implements OnInit, OnDestroy {
         {
           label: 'Manage Account',
           icon: 'pi pi-cog',
-          command: () => window.open(this.keycloak.getKeycloakInstance().createAccountUrl(), '_blank'),
+          command: () => window.open(this.keycloak.createAccountUrl(), '_blank'),
         },
         {
           label: 'Logout',

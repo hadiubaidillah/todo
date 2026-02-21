@@ -1,6 +1,6 @@
 import { inject, Injectable, NgZone, signal } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { KeycloakService } from 'keycloak-angular';
+import Keycloak from 'keycloak-js';
 import { Notification } from '../models/notification.model';
 import { environment } from '../../../environments/environment';
 import { catchError, forkJoin, of, retry, Subject } from 'rxjs';
@@ -28,7 +28,7 @@ export class NotificationService {
   private isFirstConnection = true;
 
   private http = inject(HttpClient);
-  private keycloak = inject(KeycloakService);
+  private keycloak = inject(Keycloak);
   private zone = inject(NgZone);
 
   /**
@@ -187,7 +187,8 @@ export class NotificationService {
     }
 
     try {
-      const token = await this.keycloak.getToken();
+      await this.keycloak.updateToken(30);
+      const token = this.keycloak.token;
       if (!token) {
         throw new Error('No token available');
       }

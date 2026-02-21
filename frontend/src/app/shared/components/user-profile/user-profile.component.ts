@@ -1,6 +1,6 @@
 import { Component, inject, OnInit } from '@angular/core';
 import { Card } from 'primeng/card';
-import { KeycloakService } from 'keycloak-angular';
+import Keycloak from 'keycloak-js';
 
 @Component({
   selector: 'app-user-profile',
@@ -38,7 +38,7 @@ import { KeycloakService } from 'keycloak-angular';
   `],
 })
 export class UserProfileComponent implements OnInit {
-  private keycloak = inject(KeycloakService);
+  private keycloak = inject(Keycloak);
   fullName = '';
   email = '';
 
