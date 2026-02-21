@@ -21,4 +21,10 @@ class FallbackController {
         return ResponseEntity.status(HttpStatus.SERVICE_UNAVAILABLE)
             .body(mapOf("message" to "Notification Service is currently unavailable. Please try again later."))
     }
+
+    @GetMapping("/ai")
+    fun aiFallback(): ResponseEntity<Map<String, String>> {
+        return ResponseEntity.status(HttpStatus.SERVICE_UNAVAILABLE)
+            .body(mapOf("message" to "AI Service is currently unavailable. Please try again later."))
+    }
 }

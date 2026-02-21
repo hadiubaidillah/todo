@@ -4,5 +4,6 @@ include(
     "platform:discovery-server",
     "platform:gateway-server",
     "platform:notification-service",
-    "services:todo-service"
+    "services:todo-service",
+    "services:ai-service"
 )

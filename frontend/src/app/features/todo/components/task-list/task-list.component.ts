@@ -75,6 +75,7 @@ import { Task, TaskDTO } from '../../models/task.model';
       <app-create-task-dialog
         [(visible)]="showCreateDialog"
         (taskCreated)="onTaskCreated($event)"
+        (tasksCreated)="onTasksCreated($event)"
       />
       <app-delete-task-dialog
         [(visible)]="showDeleteDialog"
@@ -149,6 +150,10 @@ export class TaskListComponent implements OnInit, OnDestroy {
 
   onTaskCreated(dto: TaskDTO): void {
     this.taskService.createTask(dto);
+  }
+
+  onTasksCreated(dtos: TaskDTO[]): void {
+    dtos.forEach((dto) => this.taskService.createTask(dto));
   }
 
   onToggle(id: string): void {

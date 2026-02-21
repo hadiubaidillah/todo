@@ -45,6 +45,16 @@ spring:
                     name: todoService
                     fallbackUri: forward:/fallback/todo
 
+            - id: ai-service
+              uri: lb://AI-SERVICE
+              predicates:
+                - Path=/api/v1/ai/**
+              filters:
+                - name: CircuitBreaker
+                  args:
+                    name: aiService
+                    fallbackUri: forward:/fallback/ai
+
             # --- OpenAPI Docs Routes ---
             - id: todo-service-docs
               uri: lb://TODO-SERVICE
@@ -96,10 +106,15 @@ resilience4j:
         baseConfig: default
       notificationService:
         baseConfig: default
+      aiService:
+        baseConfig: default
   timelimiter:
     configs:
       default:
         timeoutDuration: 5s
+    instances:
+      aiService:
+        timeoutDuration: 30s
 
 springdoc:
   swagger-ui:

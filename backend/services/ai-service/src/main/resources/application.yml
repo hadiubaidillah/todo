@@ -1,0 +1,37 @@
+server:
+  port: ${SERVER_PORT:8084}
+
+spring:
+  application:
+    name: ai-service
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          issuer-uri: ${KEYCLOAK_ISSUER_URI:http://localhost:8083/realms/todo}
+          jwk-set-uri: ${KEYCLOAK_JWKS_URI:http://localhost:8083/realms/todo/protocol/openid-connect/certs}
+
+eureka:
+  client:
+    service-url:
+      defaultZone: http://${EUREKA_HOSTNAME:localhost}:8761/eureka/
+  instance:
+    prefer-ip-address: true
+
+anthropic:
+  api-key: ${ANTHROPIC_API_KEY:}
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,prometheus,metrics
+  tracing:
+    sampling:
+      probability: 1.0
+    export:
+      zipkin:
+        endpoint: ${ZIPKIN_URL:http://localhost:9411}/api/v2/spans
+  metrics:
+    tags:
+      application: ${spring.application.name}
