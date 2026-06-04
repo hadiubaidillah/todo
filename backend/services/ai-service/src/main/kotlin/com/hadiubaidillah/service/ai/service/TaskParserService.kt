@@ -3,7 +3,6 @@ package com.hadiubaidillah.service.ai.service
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.hadiubaidillah.service.ai.model.ParseRequest
 import com.hadiubaidillah.service.ai.model.ParsedTask
-import org.springframework.beans.factory.annotation.Value
 import org.springframework.http.MediaType
 import org.springframework.stereotype.Service
 import org.springframework.web.client.RestClient
@@ -13,9 +12,13 @@ import java.util.Locale
 
 @Service
 class TaskParserService(
-    private val objectMapper: ObjectMapper,
-    @Value("\${ANTHROPIC_API_KEY}") private val apiKey: String
+    private val objectMapper: ObjectMapper
 ) {
+    // Use System.getenv() to bypass Spring Boot 4 / Spring 7 circular placeholder resolution
+    // that occurs when @Value("${ANTHROPIC_API_KEY}") tries to resolve through the property chain
+    private val apiKey: String = System.getenv("ANTHROPIC_API_KEY")
+        ?: throw IllegalStateException("ANTHROPIC_API_KEY environment variable is not set")
+
     private val restClient = RestClient.builder()
         .baseUrl("https://api.anthropic.com")
         .build()
