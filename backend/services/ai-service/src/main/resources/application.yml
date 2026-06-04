@@ -18,9 +18,6 @@ eureka:
   instance:
     prefer-ip-address: true
 
-anthropic:
-  api-key: ${ANTHROPIC_API_KEY:}
-
 management:
   endpoints:
     web:

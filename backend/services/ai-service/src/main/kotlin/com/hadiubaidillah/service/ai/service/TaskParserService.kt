@@ -14,7 +14,7 @@ import java.util.Locale
 @Service
 class TaskParserService(
     private val objectMapper: ObjectMapper,
-    @Value("\${anthropic.api-key}") private val apiKey: String
+    @Value("\${ANTHROPIC_API_KEY}") private val apiKey: String
 ) {
     private val restClient = RestClient.builder()
         .baseUrl("https://api.anthropic.com")
