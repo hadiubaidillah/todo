@@ -1,0 +1,11 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: ai-service-config
+  namespace: todo
+data:
+  SERVER_PORT: "8084"
+  KEYCLOAK_ISSUER_URI: http://keycloak:8080/realms/todo
+  KEYCLOAK_JWKS_URI: http://keycloak:8080/realms/todo/protocol/openid-connect/certs
+  EUREKA_HOSTNAME: discovery-server
+  ZIPKIN_URL: http://zipkin:9411

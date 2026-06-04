@@ -6,4 +6,5 @@ resources:
   - configmaps/gateway-config.yaml
   - configmaps/todo-service-config.yaml
   - configmaps/notification-service-config.yaml
+  - configmaps/ai-service-config.yaml
   - configmaps/frontend-config.yaml

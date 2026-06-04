@@ -1,0 +1,11 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: ai-service
+  namespace: todo
+spec:
+  selector:
+    app: ai-service
+  ports:
+    - port: 8084
+      targetPort: 8084

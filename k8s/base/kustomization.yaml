@@ -8,14 +8,17 @@ resources:
   - secrets/rabbitmq-secret.yaml
   - secrets/redis-secret.yaml
   - secrets/mail-secret.yaml
+  - secrets/anthropic-secret.yaml
   - deployments/discovery-server.yaml
   - deployments/gateway-server.yaml
   - deployments/todo-service.yaml
   - deployments/notification-service.yaml
+  - deployments/ai-service.yaml
   - deployments/frontend.yaml
   - services/discovery-svc.yaml
   - services/gateway-svc.yaml
   - services/todo-svc.yaml
   - services/notification-svc.yaml
+  - services/ai-svc.yaml
   - services/frontend-svc.yaml
   - ingress.yaml

@@ -36,13 +36,15 @@ pipeline {
                     env.BUILD_TODO         = (sharedBackend || changedFiles.split('\n').any { it.startsWith('backend/services/todo-service/') }) ? 'true' : 'false'
                     env.BUILD_NOTIFICATION = (sharedBackend || changedFiles.split('\n').any { it.startsWith('backend/platform/notification-service/') }) ? 'true' : 'false'
                     env.BUILD_DISCOVERY    = (sharedBackend || changedFiles.split('\n').any { it.startsWith('backend/platform/discovery-server/') }) ? 'true' : 'false'
+                    env.BUILD_AI           = (sharedBackend || changedFiles.split('\n').any { it.startsWith('backend/services/ai-service/') }) ? 'true' : 'false'
 
                     echo """Services to build:
   frontend:             ${env.BUILD_FRONTEND}
   gateway-server:       ${env.BUILD_GATEWAY}
   todo-service:         ${env.BUILD_TODO}
   notification-service: ${env.BUILD_NOTIFICATION}
-  discovery-server:     ${env.BUILD_DISCOVERY}"""
+  discovery-server:     ${env.BUILD_DISCOVERY}
+  ai-service:           ${env.BUILD_AI}"""
                 }
             }
         }
@@ -54,7 +56,8 @@ pipeline {
                     env.BUILD_GATEWAY == 'true' ||
                     env.BUILD_TODO == 'true' ||
                     env.BUILD_NOTIFICATION == 'true' ||
-                    env.BUILD_DISCOVERY == 'true'
+                    env.BUILD_DISCOVERY == 'true' ||
+                    env.BUILD_AI == 'true'
                 }
             }
             steps {
@@ -114,6 +117,15 @@ pipeline {
                             """
                         }
                     }
+                    if (env.BUILD_AI == 'true') {
+                        buildStages['ai-service'] = {
+                            sh """
+                                docker build -t ${HARBOR_REGISTRY}/${HARBOR_PROJECT}/ai-service:latest \
+                                    -f backend/services/ai-service/Dockerfile backend/
+                                docker push ${HARBOR_REGISTRY}/${HARBOR_PROJECT}/ai-service:latest
+                            """
+                        }
+                    }
 
                     parallel buildStages
                 }
@@ -127,7 +139,8 @@ pipeline {
                     env.BUILD_GATEWAY == 'true' ||
                     env.BUILD_TODO == 'true' ||
                     env.BUILD_NOTIFICATION == 'true' ||
-                    env.BUILD_DISCOVERY == 'true'
+                    env.BUILD_DISCOVERY == 'true' ||
+                    env.BUILD_AI == 'true'
                 }
             }
             steps {
@@ -147,6 +160,9 @@ pipeline {
                         }
                         if (env.BUILD_DISCOVERY == 'true') {
                             sh 'kubectl rollout restart deployment/discovery-server -n todo'
+                        }
+                        if (env.BUILD_AI == 'true') {
+                            sh 'kubectl rollout restart deployment/ai-service -n todo'
                         }
                     }
 
